@@ -1,0 +1,25 @@
+{
+  "name": "mcp-tudu",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Servidor MCP que deixa assistentes de IA criarem projetos, épicos e tarefas no TuDu.",
+  "main": "index.js",
+  "bin": {
+    "mcp-tudu": "index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/callipog/mcp-tudu.git"
+  },
+  "author": {
+    "name": "Guilherme Callipo",
+    "email": "guilhermecallipo@gmail.com"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  }
+}
