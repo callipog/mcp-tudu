@@ -1,0 +1,48 @@
+name: release
+
+# Empacota o servidor num executável único e anexa à release.
+# Dispara ao empurrar uma tag: git tag v1.0.0 && git push origin v1.0.0
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Gerar o executável
+        run: npm run build:exe
+
+      - name: Conferir que o executável responde ao MCP
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath build/mcp-tudu.exe -PassThru -RedirectStandardInput NUL -RedirectStandardOutput out.txt -RedirectStandardError err.txt
+          Start-Sleep -Seconds 3
+          if (-not $p.HasExited) { $p.Kill() }
+          if (-not (Test-Path build/mcp-tudu.exe)) { throw "executável não foi gerado" }
+          Write-Host "executável iniciou sem quebrar"
+
+      - name: Publicar na release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          gh release create ${{ github.ref_name }}
+          build/mcp-tudu.exe
+          --title "mcp-tudu ${{ github.ref_name }}"
+          --notes "Executável único para Windows — não precisa de Node nem de npm install.
+
+          Baixe `mcp-tudu.exe` e aponte a configuração do seu assistente para o caminho dele.
+          Requer o TuDu 1.5.0+ com a ponte ligada em Configurações → Agentes de IA (MCP)."

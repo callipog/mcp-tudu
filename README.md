@@ -30,15 +30,16 @@ limitação da arquitetura deles. Para esses, peça o JSON do roadmap e importe 
 ## Requisitos
 
 - TuDu **1.5.0 ou superior**, instalado e aberto
-- Node 18+
+- Windows (para o executável). Em outros sistemas, use a instalação por código.
 
-## Instalação
+## Instalação — executável (recomendado)
 
-```bash
-git clone https://github.com/callipog/mcp-tudu.git
-cd mcp-tudu
-npm install
-```
+Baixe o **`mcp-tudu.exe`** da [última release](https://github.com/callipog/mcp-tudu/releases/latest)
+e guarde onde preferir. Não precisa de Node, nem de `npm install`.
+
+> Por ser um executável sem assinatura digital, o Windows pode mostrar um aviso
+> do SmartScreen na primeira execução. É esperado: assinar exigiria um
+> certificado pago.
 
 No TuDu: **Configurações → Agentes de IA (MCP) → Aceitar conexões de agentes**.
 Isso sobe a ponte em `127.0.0.1:8787` e grava o token em `bridge.json`, na pasta
@@ -52,8 +53,7 @@ Em `%APPDATA%\Claude\claude_desktop_config.json`:
 {
   "mcpServers": {
     "tudu": {
-      "command": "node",
-      "args": ["C:\\caminho\\para\\mcp-tudu\\index.js"]
+      "command": "C:\\caminho\\para\\mcp-tudu.exe"
     }
   }
 }
@@ -62,7 +62,7 @@ Em `%APPDATA%\Claude\claude_desktop_config.json`:
 ### Claude Code
 
 ```bash
-claude mcp add tudu -- node C:\caminho\para\mcp-tudu\index.js
+claude mcp add tudu -- C:\caminho\para\mcp-tudu.exe
 ```
 
 ### Gemini CLI
@@ -73,12 +73,36 @@ Em `~/.gemini/settings.json`:
 {
   "mcpServers": {
     "tudu": {
-      "command": "node",
-      "args": ["C:\\caminho\\para\\mcp-tudu\\index.js"]
+      "command": "C:\\caminho\\para\\mcp-tudu.exe"
     }
   }
 }
 ```
+
+## Instalação — pelo código
+
+Para desenvolver, ou fora do Windows:
+
+```bash
+git clone https://github.com/callipog/mcp-tudu.git
+cd mcp-tudu
+npm install
+```
+
+E aponte a configuração para `node` com o `index.js` como argumento, no lugar
+do executável.
+
+## Gerando o executável
+
+O [workflow de release](.github/workflows/release.yml) faz isso sozinho ao
+empurrar uma tag:
+
+```bash
+git tag v1.0.1 && git push origin v1.0.1
+```
+
+Localmente, se quiser: `npm run build:exe` (sai em `build/mcp-tudu.exe`). O
+`esbuild` junta tudo num arquivo CommonJS e o `pkg` embute o runtime do Node.
 
 ## Ferramentas
 

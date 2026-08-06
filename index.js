@@ -218,4 +218,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 });
 
-await server.connect(new StdioServerTransport());
+// Sem `await` de topo: o empacotador converte para CommonJS, que não o suporta.
+server.connect(new StdioServerTransport()).catch((err) => {
+  console.error('[mcp-tudu] falha ao iniciar:', err);
+  process.exit(1);
+});
