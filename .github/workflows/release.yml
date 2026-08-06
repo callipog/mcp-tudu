@@ -49,14 +49,14 @@ jobs:
           $mb = [math]::Round((Get-Item build/mcp-tudu.exe).Length / 1MB, 1)
           Write-Host "executável respondeu ao MCP ($mb MB)"
 
+      # Em bash, não em PowerShell: as notas têm crases e acentos, e crase é
+      # caractere de escape no PowerShell — o comando quebrava por causa disso.
       - name: Publicar na release
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-        run: >
-          gh release create ${{ github.ref_name }}
-          build/mcp-tudu.exe
-          --title "mcp-tudu ${{ github.ref_name }}"
-          --notes "Executável único para Windows — não precisa de Node nem de npm install.
-
-          Baixe `mcp-tudu.exe` e aponte a configuração do seu assistente para o caminho dele.
-          Requer o TuDu 1.5.0+ com a ponte ligada em Configurações → Agentes de IA (MCP)."
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            build/mcp-tudu.exe \
+            --title "mcp-tudu $GITHUB_REF_NAME" \
+            --notes-file .github/release-notes.md
