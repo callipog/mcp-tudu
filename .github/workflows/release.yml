@@ -29,11 +29,25 @@ jobs:
       - name: Conferir que o executável responde ao MCP
         shell: pwsh
         run: |
-          $p = Start-Process -FilePath build/mcp-tudu.exe -PassThru -RedirectStandardInput NUL -RedirectStandardOutput out.txt -RedirectStandardError err.txt
-          Start-Sleep -Seconds 3
-          if (-not $p.HasExited) { $p.Kill() }
           if (-not (Test-Path build/mcp-tudu.exe)) { throw "executável não foi gerado" }
-          Write-Host "executável iniciou sem quebrar"
+
+          # Fala MCP de verdade com ele: um initialize pelo stdin precisa
+          # devolver o serverInfo. Melhor descobrir aqui do que na release.
+          '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"ci","version":"1"}}}' |
+            Out-File -FilePath req.txt -Encoding ascii
+          $p = Start-Process -FilePath build/mcp-tudu.exe -PassThru -NoNewWindow `
+            -RedirectStandardInput req.txt -RedirectStandardOutput out.txt -RedirectStandardError err.txt
+          Start-Sleep -Seconds 8
+          if (-not $p.HasExited) { $p.Kill() }
+
+          $saida = if (Test-Path out.txt) { Get-Content out.txt -Raw } else { '' }
+          if ($saida -notmatch 'tudu-mcp') {
+            Write-Host "stdout: $saida"
+            if (Test-Path err.txt) { Write-Host ("stderr: " + (Get-Content err.txt -Raw)) }
+            throw "o executável não respondeu ao initialize do MCP"
+          }
+          $mb = [math]::Round((Get-Item build/mcp-tudu.exe).Length / 1MB, 1)
+          Write-Host "executável respondeu ao MCP ($mb MB)"
 
       - name: Publicar na release
         env:
