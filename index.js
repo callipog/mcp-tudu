@@ -43,8 +43,11 @@ function credentials() {
 
 /* ------------------------------------------------------------------ chamadas */
 
-// A escrita espera a confirmação do usuário na tela do TuDu (até 2 min lá).
-const TIMEOUT_MS = 150000;
+// Timeouts distintos: a escrita espera a confirmação do usuário na tela (até
+// ~2,5 min); a leitura é respondida na hora, então uma espera longa só serviria
+// para uma ponte travada/hostil prender o agente. Falha rápido na leitura.
+const WRITE_TIMEOUT_MS = 150000;
+const READ_TIMEOUT_MS = 15000;
 
 async function call(method, route, body) {
   const cred = credentials();
@@ -63,7 +66,7 @@ async function call(method, route, body) {
         ...(body ? { 'Content-Type': 'application/json' } : {}),
       },
       body: body ? JSON.stringify(body) : undefined,
-      signal: AbortSignal.timeout(TIMEOUT_MS),
+      signal: AbortSignal.timeout(method === 'GET' ? READ_TIMEOUT_MS : WRITE_TIMEOUT_MS),
     });
   } catch (err) {
     if (err?.name === 'TimeoutError') {
